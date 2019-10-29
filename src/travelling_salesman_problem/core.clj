@@ -93,8 +93,8 @@
   This makes each fitness value correspond to a probability."
   [individual population]
   (let [fit (:fitness individual)
-        distance-sum (reduce + (map :total-distance population))]
-    (assoc-in individual [:fitness] (/ fit distance-sum))))
+        fitness-sum (reduce + (map :fitness population))]
+    (assoc-in individual [:fitness] (/ fit fitness-sum))))
 
 
 (defn generate-route
@@ -114,9 +114,14 @@
       (rand-nth pop))))
 
 
+;; By selecting the best individuals we are using elitism.
 (defn selection
-  [population]
-  (repeatedly (count population) #(pick-one population)))
+  "Select the best individuals from the population and
+  randomly select among the rest."
+  [population population-size elitism-size]
+  (let [best (take elitism-size (reverse (sort-by :fitness population)))
+        selected-rest (repeatedly (- population-size elitism-size) #(pick-one population))]
+    (into best selected-rest)))
 
 
 (defn crossover
@@ -162,8 +167,8 @@
 
 (defn crossover-population
   "Breed the population."
-  [population cities-list]
-  (let [selected-population (selection population)
+  [population population-size elitism-size cities-list]
+  (let [selected-population (selection population population-size elitism-size)
         selected-pairs (select-parents selected-population)]
     (map #(crossover % cities-list) selected-pairs)))
 
@@ -204,9 +209,9 @@
 
 (defn new-generation
   "Generate a new generation of a given population."
-  [population cities-list population-size mutation-rate]
-  (let [selected-population (selection population)
-        breeding (crossover-population population cities-list)]
+  [population cities-list population-size elitism-size mutation-rate]
+  (let [selected-population (selection population population-size elitism-size)
+        breeding (crossover-population population population-size elitism-size cities-list)]
     (mutate-population breeding cities-list mutation-rate)))
 
 
@@ -224,6 +229,7 @@
   [initial-population
    cities-list
    population-size
+   elitism-size
    generations
    mutation-rate
    print-progress]
@@ -233,7 +239,9 @@
          historical-fitness []
          best nil]
     (let [pop (map #(normalize-fitness %1 population) population)
-          best (last (sort-by :fitness pop))]
+          sorted-pop (sort-by :fitness pop)
+          best (last sorted-pop)
+          worst (first sorted-pop)]
       (if print-progress
         (println (str "Generation: " generation
                       ", Best distance: " (:total-distance best)
@@ -242,12 +250,14 @@
         {:population pop
          :historical-distance historical-distance
          :historical-fitness historical-fitness
-         :best best}
+         :best best
+         :worst worst}
         (recur
          (inc generation)
          (new-generation pop
                          cities-list
                          population-size
+                         elitism-size
                          mutation-rate)
          (conj historical-distance (:total-distance best))
          (conj historical-fitness (:fitness best))
@@ -257,9 +267,9 @@
 ;; -----
 ;; ## Variables
 
-(def generations 500)
+(def generations 5000)
 (def population-size 100)
-(def population-selection-size 0.2)
+(def elitism-size 20)
 (def mutation-rate 0.1)
 (def cities
   [(City. "A" 160 189)
@@ -303,6 +313,7 @@
         ga (genetic-algorithm initial-population
                                cities
                                population-size
+                               elitism-size
                                generations
                                mutation-rate
                                true)
