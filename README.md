@@ -1,5 +1,5 @@
 # Travelling Salesman Problem
-Implementation of a Genetic Algorithm using Clojure. See the literate programming page: [Docs](./docs/uberdoc.html)
+Implementation of a Genetic Algorithm using Clojure. See the literate programming page: [Docs](https://vascoferreira25.github.io/travelling-salesman-problem/index.html)
 
 > "Given a list of cities and the distances between each pair of cities, what
 > is the shortest possible route that visits each city and returns to the
@@ -44,7 +44,7 @@ and execute the function.
 This project has a literate programming page that walks the entire code to explain
 everything that is done at each step.
 
-Check it at: [Docs](./docs/uberdoc.html)
+Check it at: [Docs](https://vascoferreira25.github.io/travelling-salesman-problem/index.html)
 
 ## Results
 
