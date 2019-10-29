@@ -1,6 +1,7 @@
 ;; # Travelling Salesman Problem
 ;; This is an alternative implementation in Clojure of the
 ;; Python tutorial in [Evolution of a salesman: A complete genetic algorithm tutorial for Python](https://towardsdatascience.com/evolution-of-a-salesman-a-complete-genetic-algorithm-tutorial-for-python-6fe5d2b3ca35)
+;; And also changed a few details as in [Coding Challenge #35.4: Traveling Salesperson with Genetic Algorithm](https://www.youtube.com/watch?v=M3KTWnTrU_c)
 
 ;; ## The Problem The travelling Salesman Problem asks que following question:
 ;;
@@ -9,7 +10,7 @@
 ;; origin city?"
 ;; - [Wikipedia](https://en.wikipedia.org/wiki/Travelling_salesman_problem)
 ;;
-;; This implementations uses a genetic algorithm to search the shortest route
+;; This implementations uses a genetic algorithm to find the shortest route
 ;; between cities.
 
 
@@ -43,10 +44,10 @@
 
 
 ;; -----
-;; ## Genetic Algorithm
+;; ## Utility Functions
 
 ;; As the cities are just points, just calculate the distance
-;; between two points: `$sqrt{(x_{a} - x{b})^2 + (y_{a} - y_{b})^2}$`
+;; between two points with `sqrt((xa - xb)^2 + (ya - yb)^2)`.
 (defn distance-between-cities
   "Calculate the distance between two cities."
   [city-pair]
@@ -56,7 +57,8 @@
         dist-y (abs (- (:y city-a) (:y city-b)))]
     (sqrt (+ (pow dist-x 2) (pow dist-y 2)))))
 
-;; Distance between the first and second city
+;; Distance between the first and second city:
+
 ;; (distance-between-cities [(first cities) (second cities)])
 ;; => 10.04987562112089
 
@@ -71,8 +73,10 @@
         last-city-distance (distance-between-cities [last-city first-city])]
     (+ (reduce + distances) last-city-distance)))
 
-;; Total distance of the cities-list
+;; Total distance of the cities-list:
+
 ;; (total-distance cities)
+
 ;; => 921.6346703083029
 
 
@@ -83,8 +87,10 @@
   [total-dist]
   (/ 1.0 (+ 1 (pow total-dist 8))))
 
-;; Fitness of the cities-list
+;; Fitness of the cities-list:
+
 ;; (fitness (total-distance cities))
+
 ;; => 0.0010850286260015397
 
 
@@ -114,7 +120,7 @@
       (rand-nth pop))))
 
 
-;; By selecting the best individuals we are using elitism.
+;; By selecting the best individuals we are performing elitism.
 (defn selection
   "Select the best individuals from the population and
   randomly select among the rest."
@@ -126,11 +132,9 @@
 
 (defn crossover
   "Generate a new individual based on 2 parents.
-  Select a random number of genes of parent 1 and parent 2 and then
-  concat them."
+  Select a random number of genes of parent 1 and fill with genes from parent 2 ."
   [parent-pair cities-list]
-  (let [gene-a (rand-int (count cities-list))
-        gene-b (rand-int (count cities-list))
+  (let [genes-a (rand-int (count cities-list))
         parent-1 (first parent-pair)
         ;; If there isn't a second parent, generate one randomly.
         parent-2 (if (second parent-pair)
@@ -138,14 +142,14 @@
                    (let [route (generate-route cities-list)
                          distance (total-distance route)]
                      (Individual. nil route distance (fitness distance))))
-        child-p1 (vec (take gene-a (:route parent-1)))
+        child-p1 (vec (take genes-a (:route parent-1)))
         ;; Use a hash-set to only allow unique cities.
         cities-p1 (into #{} (map :name child-p1))
         child-p2 (vec
                   (filter #(not (nil? %))
-                          (for [gene (:route parent-2)]
-                            (if-not (contains? cities-p1 (:name gene))
-                              gene))))
+                          (for [genes-b (:route parent-2)]
+                            (if-not (contains? cities-p1 (:name genes-b))
+                              genes-b))))
         route (vec (concat child-p1 child-p2))
         distance (total-distance route)]
     (Individual.
@@ -177,7 +181,7 @@
 ;; ## Mutation
 
 (defn swap-cities
-  "Swap the order of some elements randomly for an individual."
+  "Swap the order of some elements randomly for an individual given a probability."
   [individual mutation-rate]
   (let [i (:route individual)
         r1 (rand-int (count i))
@@ -207,6 +211,8 @@
   (map #(mutate % cities-list mutation-rate) population))
 
 
+;; A new generation is created based on selected individuals, which are crossed
+;; in pairs and then mutated.
 (defn new-generation
   "Generate a new generation of a given population."
   [population cities-list population-size elitism-size mutation-rate]
@@ -215,6 +221,7 @@
     (mutate-population breeding cities-list mutation-rate)))
 
 
+;; Save all the evolution data to a csv file to make some graphs.
 (defn save-historical-data
   "Save the evolution data in a file."
   [file-name data]
@@ -223,8 +230,14 @@
       (.write w d))))
 
 
-;; ## Start Evolution
+;; -----
+;; ## Genetic Algorithm
 
+;; The algorithms works as follows:
+;; - Start with a random initial-population
+;; - Normalize the fitness values
+;; - Start a new generation
+;; - Loop
 (defn genetic-algorithm
   [initial-population
    cities-list
@@ -272,10 +285,19 @@
 ;; -----
 ;; ## Variables
 
+;; Number of iterations
 (def generations 5000)
+
+;; Number of individuals in each generation
 (def population-size 100)
+
+;; Number of best performant individuals to be selected
 (def elitism-size 20)
+
+;; Rate at which the cities in a route will be swapped
 (def mutation-rate 0.1)
+
+;; All the cities to find the route for.
 (def cities
   [(City. "A" 160 189)
    (City. "B" 170 188)
@@ -330,7 +352,7 @@
     (println "Best Route: " (map :name (:route best)))
     (println "Best Fitness: " (:fitness best))))
 
-(-main)
+;; Execute code in REPL:
 
+;; `(-main)`
 
-;; (criterium/quick-bench (-main))
