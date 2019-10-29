@@ -330,7 +330,7 @@
 ;; ## Main Function
 
 (defn -main
-  "I don't do a whole lot ... yet."
+  "Run the genetic algorithm, print the best results and save the evolution-data."
   [& args]
   (println "\nStart Genetic Algorithm")
   (let [initial-population (for [i (range population-size)]
