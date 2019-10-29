@@ -235,33 +235,38 @@
    print-progress]
   (loop [generation 1
          population initial-population
+         historical-best-distance []
          historical-distance []
          historical-fitness []
-         best nil]
-    (let [pop (map #(normalize-fitness %1 population) population)
-          sorted-pop (sort-by :fitness pop)
-          best (last sorted-pop)
-          worst (first sorted-pop)]
+         global-best {:fitness 0}]
+    (let [current-generation (map #(normalize-fitness %1 population) population)
+          ;; Dont use normalized fitness values as it is a percentage of the
+          ;; current population. This means it doesn't correspond to the global
+          ;; best value.
+          sorted-gen (sort-by :fitness population)
+          gen-best (last sorted-gen)]
       (if print-progress
         (println (str "Generation: " generation
-                      ", Best distance: " (:total-distance best)
-                      ", Best fitness: " (:fitness best))))
+                      ", Best distance: " (:total-distance global-best))))
       (if (= generation generations)
-        {:population pop
+        {:population current-generation
+         :historical-best-distance historical-best-distance
          :historical-distance historical-distance
          :historical-fitness historical-fitness
-         :best best
-         :worst worst}
+         :global-best global-best}
         (recur
          (inc generation)
-         (new-generation pop
+         (new-generation current-generation
                          cities-list
                          population-size
                          elitism-size
                          mutation-rate)
-         (conj historical-distance (:total-distance best))
-         (conj historical-fitness (:fitness best))
-         best)))))
+         (conj historical-best-distance (:total-distance global-best))
+         (conj historical-distance (:total-distance gen-best))
+         (conj historical-fitness (:fitness gen-best))
+         (if (> (:fitness gen-best) (:fitness global-best))
+           gen-best
+           global-best))))))
 
 
 ;; -----
@@ -317,7 +322,8 @@
                                generations
                                mutation-rate
                                true)
-        best (:best ga)]
+        best (:global-best ga)]
+    (save-historical-data "historical-best-distance.csv" (:historical-best-distance ga))
     (save-historical-data "historical-distance.csv" (:historical-distance ga))
     (save-historical-data "historical-fitness.csv" (:historical-fitness ga))
     (println "Lowest Distance: " (:total-distance best))
