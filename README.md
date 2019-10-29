@@ -9,7 +9,6 @@ Implementation of a Genetic Algorithm using Clojure. See the literate programmin
 This implementations uses a genetic algorithm to find the shortest route
 between cities.
 
-
 ## Installation
 
 1. Clone this repo:
@@ -54,6 +53,9 @@ With the following parameters, the algorithm reached the result of `901.92385793
 - Population Size: 100,
 - Elitism Size: 20,
 - Mutation Rate: 0.1.
+
+![evolution_chart](./resources/evolution_chart.png "Shortest Distance Evolution per Generation")
+
 
 ## License
 
