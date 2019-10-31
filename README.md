@@ -46,15 +46,25 @@ everything that is done at each step.
 
 Check it at: [Docs](https://vascoferreira25.github.io/travelling-salesman-problem/index.html)
 
+## Purpose
+
+Find the best possible route for a list of cities.
+The cities are represented in the following chart:
+
+![cities_map](./resources/cities_map.png "Map with the cities")
+
 ## Results
 
-With the following parameters, the algorithm reached the result of `901.923857930257`:
-- Generations: 5000,
-- Population Size: 100,
-- Elitism Size: 20,
+With the following parameters, the algorithm reached the result of `565.685424949238`:
+- Generations: 10000,
+- Population Size: 500,
 - Mutation Rate: 0.1.
 
-![evolution_chart](./resources/evolution_chart.png "Shortest Distance Evolution per Generation")
+### Evolution
+![evolution_chart](./resources/evolution_chart.png "Best Distance Evolution per Generation")
+
+### Solution
+![solution](./resources/solution.png "Solution found by the GA algorithm.")
 
 
 ## License
