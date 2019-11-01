@@ -126,7 +126,7 @@
 (defn fitness
   "Calculate the fitness based on the route total distance.
   As distance decreases, fitness increases.
-  0 is the absolute best value."
+  1 is the absolute best value."
   [total-dist]
   (/ 1.0 (+ 1 (pow total-dist 8))))
 
