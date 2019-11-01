@@ -2969,7 +2969,7 @@ between two points with <code>sqrt((xa - xb)^2 + (ya - yb)^2)</code>.</p>
 <p>=> 921.6346703083029</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Calculate the fitness based on the route total distance.
   As distance decreases, fitness increases.
-  0 is the absolute best value.</p>
+  1 is the absolute best value.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn fitness
   [total-dist]
   (/ 1.0 (+ 1 (pow total-dist 8))))</pre></td></tr><tr><td class="docs"><p>Fitness of the cities-list:</p>
