@@ -7,7 +7,6 @@
                  [uncomplicate/neanderthal "0.26.1"]
                  [nrepl "0.6.0"]]
   :plugins [[lein-marginalia "0.9.1"]
-			[cider/cider-nrepl "LATEST"]]
-  :main ^:skip-aot travelling-salesman-problem.core
+            [cider/cider-nrepl "LATEST"]]  :main ^:skip-aot travelling-salesman-problem.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

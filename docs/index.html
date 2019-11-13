@@ -2869,22 +2869,18 @@ net.brehaut.ClojureTools = (function (SH) {
 </div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.10.0</td></tr><tr><td class="dep-name">uncomplicate/neanderthal</td><td class="dotted"><hr /></td><td class="dep-version">0.26.1</td></tr><tr><td class="dep-name">nrepl</td><td class="dotted"><hr /></td><td class="dep-version">0.6.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#travelling-salesman-problem.core">travelling-salesman-problem.core</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#travelling-salesman-problem.core" name="travelling-salesman-problem.core"><h1 class="project-name">travelling-salesman-problem.core</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h1>Travelling Salesman Problem</h1>
 
 <p>This is an alternative implementation in Clojure of the
-Python tutorial in <a href="https://towardsdatascience.com/evolution-of-a-salesman-a-complete-genetic-algorithm-tutorial-for-python-6fe5d2b3ca35">Evolution of a salesman: A complete genetic algorithm tutorial for Python</a>.</p>
-
-<p>I also changed the selection progress to Roulette Selection as shown in
-<a href="https://www.youtube.com/watch?v=M3KTWnTrU_c">Coding Challenge #35.4: Traveling Salesperson with Genetic Algorithm</a></p>
-
-<h2>The travelling Salesman Problem asks the following question:</h2>
+Python tutorial in <a href="https://towardsdatascience.com/evolution-of-a-salesman-a-complete-genetic-algorithm-tutorial-for-python-6fe5d2b3ca35">Evolution of a salesman: A complete genetic algorithm tutorial for Python</a>
+And also changed a few details as in <a href="https://www.youtube.com/watch?v=M3KTWnTrU_c">Coding Challenge #35.4: Traveling Salesperson with Genetic Algorithm</a></p>
+</td><td class="codes"></td></tr><tr><td class="docs"><h2>The Problem The travelling Salesman Problem asks que following question:</h2>
 
 <p>"Given a list of cities and the distances between each pair of cities, what
 is the shortest possible route that visits each city and returns to the
 origin city?"
 - <a href="https://en.wikipedia.org/wiki/Travelling_salesman_problem">Wikipedia</a></p>
 
-<p>This implementation uses a genetic algorithm to find the shortest route
-between a list of cities.</p>
-
-<h2></h2>
+<p>This implementations uses a genetic algorithm to find the shortest route
+between cities.</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><h2></h2>
 
 <h2>Requirements</h2>
 
@@ -2902,21 +2898,15 @@ between a list of cities.</p>
 
 <h2>Records</h2>
 
-<p>Create a record for Cities and Individuals. This is the same as creating a
-class for each one. In Clojure it works as a simple map.</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>The City is a point and has 3 keys, a <code>:name</code> and a <code>:x</code> and <code>:y</code>
-coordinates. The name is used a unique identifier of the city.
-The coordinates are used to calculate the distance between
-cities. The total-distance of a route and the fitness functions depend on the
-coordinates of each city.</p>
+<p>Create a record for Cities and Individuals.
+This is the same as creating a class for each one.
+In Clojure it is the same as a simple map.</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>The City is a point and has 3 keys, a <code>:name</code> and a <code>:x</code> and <code>:y</code> coordinates.</p>
 </td><td class="codes"><pre class="brush: clojure">(defrecord City [name x y])</pre></td></tr><tr><td class="docs"><p>The Individual represents the genomes in the Genetic Algorithm.
 Each individual has a parent (except on the initial population)
 and the <code>:parents</code> key may be used to track its evolution in each
 generation.</p>
-
-<p>The <code>route</code> is a vector of cities and is used to calculate the
-the <code>total-distance</code> and the fitness of the individual.</p>
-</td><td class="codes"><pre class="brush: clojure">(defrecord Individual [route total-distance fitness])</pre></td></tr><tr><td class="docs"><hr />
+</td><td class="codes"><pre class="brush: clojure">(defrecord Individual [route total-distance fitness normalized-fitness])</pre></td></tr><tr><td class="docs"><hr />
 
 <h2>Utility Functions</h2>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Check if the given directory path exists.</p>
@@ -2948,8 +2938,9 @@ between two points with <code>sqrt((xa - xb)^2 + (ya - yb)^2)</code>.</p>
         dist-y (abs (- (:y city-a) (:y city-b)))]
     (sqrt (+ (pow dist-x 2) (pow dist-y 2)))))</pre></td></tr><tr><td class="docs"><p>Distance between the first and second city:</p>
 
-<p>(distance-between-cities [(first cities) (second cities)])
-=> 10.04987562112089</p>
+<pre><code>(distance-between-cities [(first cities) (second cities)])
+=&gt; 10.04987562112089
+</code></pre>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Calculate the total distance of the route.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn total-distance
   [route]
@@ -2960,13 +2951,13 @@ between two points with <code>sqrt((xa - xb)^2 + (ya - yb)^2)</code>.</p>
         ;; As city-pairs is a sequence of pairs from the first city to the last,
         ;; it misses the last pair which is last-city -&gt; first-city. To make
         ;; this last calculation, calculate the distance between the last city
-        ;; and the first to conclude the full circuit and sum it to the total.
+        ;; and the first to finish the full circuit and sum it to the total.
         last-city-distance (distance-between-cities [last-city first-city])]
     (+ (reduce + distances) last-city-distance)))</pre></td></tr><tr><td class="docs"><p>Total distance of the cities-list:</p>
 
-<p>(total-distance cities)</p>
-
-<p>=> 921.6346703083029</p>
+<pre><code>(total-distance cities)
+=&gt; 921.6346703083029
+</code></pre>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Calculate the fitness based on the route total distance.
   As distance decreases, fitness increases.
   1 is the absolute best value.</p>
@@ -2974,16 +2965,17 @@ between two points with <code>sqrt((xa - xb)^2 + (ya - yb)^2)</code>.</p>
   [total-dist]
   (/ 1.0 (+ 1 (pow total-dist 8))))</pre></td></tr><tr><td class="docs"><p>Fitness of the cities-list:</p>
 
-<p>(fitness (total-distance cities))</p>
-
-<p>=> 0.0010850286260015397</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>Normalize fitness based on the sum of fitness of the population.
+<pre><code>(fitness (total-distance cities))
+=&gt; 0.0010850286260015397
+</code></pre>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>Normalize fitness based on the max fitness of the population.
   This makes each fitness value correspond to a probability.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn normalize-fitness
   [individual population]
   (let [fit (:fitness individual)
-        fitness-sum (reduce + (map :fitness population))]
-    (assoc-in individual [:fitness] (/ fit fitness-sum))))</pre></td></tr><tr><td class="docs"><p>Generate a random route.</p>
+        pop-fitness (map :fitness population)
+        max-fitness (apply max pop-fitness)]
+    (assoc individual :normalized-fitness (/ fit max-fitness))))</pre></td></tr><tr><td class="docs"><p>Generate a random route.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn generate-route
   [city-list]
   (shuffle city-list))</pre></td></tr><tr><td class="docs"><p>Generate the initial population for the genetic algorithm with random routes.</p>
@@ -2994,7 +2986,7 @@ between two points with <code>sqrt((xa - xb)^2 + (ya - yb)^2)</code>.</p>
                 (let [route (generate-route cities-list)
                       distance (total-distance route)
                       fit (fitness distance)]
-                  (Individual. route distance fit)))))</pre></td></tr><tr><td class="docs"><p>Select a pair of parents from the population</p>
+                  (Individual. route distance fit 0)))))</pre></td></tr><tr><td class="docs"><p>Select a pair of parents from the population</p>
 </td><td class="codes"><pre class="brush: clojure">(defn select-parents
   [population]
   (loop [pop population
@@ -3019,70 +3011,84 @@ between two points with <code>sqrt((xa - xb)^2 + (ya - yb)^2)</code>.</p>
 
 <h2>Elitism</h2>
 
-<p>Select the best performing individuals.</p>
+<h3>Select the best performing individuals.</h3>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>With a random probability, pick the best individuals more often and
   the worse individuals less often.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn roulette-selection
-  [population]
-  (let [r (rand)
-        pop (filter #(&gt; (:fitness %) r) population)]
-    (if (empty? pop)
-      (rand-nth population)
-      (rand-nth pop))))</pre></td></tr><tr><td class="docs"><p>Select the population based on roulette selection.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn selection
   [population population-size]
   (loop [cnt 1
-         pop []]
+         selected-pop []]
     (if (&gt; cnt population-size)
-      pop
-      (let [selected-individual (roulette-selection population)]
-        (recur (inc cnt) (conj pop selected-individual))))))</pre></td></tr><tr><td class="docs"><hr />
+      selected-pop
+      (let [r (rand)
+            pop (filter #(&gt; (:normalized-fitness %) r) population)
+            individual (rand-nth pop)]
+        (recur (inc cnt) (conj selected-pop individual))))))</pre></td></tr><tr><td class="docs"><p>Select the population based on roulette selection.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn selection
+  [population population-size elitism-size]
+  (let [elites (take elitism-size (reverse (sort-by :fitness population)))
+        selection (roulette-selection population (- population-size elitism-size))]
+    (into elites selection)))</pre></td></tr><tr><td class="docs"><hr />
 
 <h2>Crossover</h2>
 
-<p>Combine a pair of individuals into a new one</p>
+<h3>Combine a pair of individuals into a new one</h3>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Generate a new individual based on 2 parents.
   Select a random number of genes of parent 1 and fill with genes from parent 2.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn crossover
-  [parent-pair cities-list]
-  (let [[parent-1 parent-2] parent-pair]
-    (if parent-2
-      (let [route-1 (vec (take 10 (:route parent-1)))
-            route-2 (:route parent-2)
-            new-route (combine-routes route-1 route-2)
-            distance (total-distance new-route)
-            fit (fitness distance)]
-        (Individual. new-route distance fit))
-      (let [route (generate-route cities-list)
-            distance (total-distance route)
-            fit (fitness distance)
-            new-parent (Individual. route distance fit)]
-        (crossover [parent-1 new-parent] cities-list)))))</pre></td></tr><tr><td class="docs"><p>Crossover the population to generate new individuals.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn crossover-population
-  [population cities-list]
-  (map #(crossover % cities-list) (select-parents population)))</pre></td></tr><tr><td class="docs"><hr />
+  [population population-size]
+  (for [i (range population-size)]
+    (let [parent-1 (rand-nth population)
+          parent-2 (rand-nth population)
+          route-1 (take (rand-int (count (:route parent-1))) (:route parent-1))
+          route-2 (:route parent-2)
+          new-route (combine-routes route-1 route-2)
+          distance (total-distance new-route)
+          fit (fitness distance)]
+      (Individual. new-route distance fit 0))))</pre></td></tr><tr><td class="docs"><hr />
 
 <h2>Mutation</h2>
 
-<p>Change the genes of an individual.</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>Swap the order of two elements randomly for an individual given a probability.</p>
+<h3>Change de genes of an individual.</h3>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>Swap the order of some elements randomly for an individual given a probability.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn swap-cities
   [individual mutation-rate]
-  (if (&lt; (rand) mutation-rate)
-    (let [i (:route individual)
-          r1 (rand-int (count i))
-          r2 (rand-int (count i))
-          first-city (nth i r1)
-          second-city (nth i r2)
-          s1 (assoc i r1 second-city)
-          s2 (assoc s1 r2 first-city)
-          distance (total-distance s2)
-          fit (fitness distance)]
-      (Individual. s2 distance fit))
-    individual))</pre></td></tr><tr><td class="docs"><p>Mutate each individual of a population.</p>
+  (loop [swap-counter 0
+         new-route (vec (:route individual))]
+    (if (&gt; swap-counter (count new-route))
+      ;; If already looped over all the cities in the route
+      ;; stop the loop
+      (assoc individual :route new-route)
+      (let [r (rand)]
+        (if (&lt; r mutation-rate)
+          ;; swap cities within the probability of mutation rate
+          (let [c-1 (rand-int (count new-route))
+                c-2 (rand-int (count new-route))
+                city-1 (nth new-route c-1)
+                city-2 (nth new-route c-2)
+                swap-cities (vec (assoc new-route c-1 city-2 c-2 city-1))]
+            (recur (inc swap-counter) swap-cities))
+          ;; if not swapped recur the unchanged route
+          (recur (inc swap-counter) new-route))))))</pre></td></tr><tr><td class="docs"><p>Swap the cities of each individual and update its distance and fitness values.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn swap-and-update
+  [individual mutation-rate]
+  (let [new-individual (swap-cities individual mutation-rate)
+        new-distance (total-distance (:route new-individual))
+        new-fitness (fitness new-distance)]
+    (assoc new-individual :total-distance new-distance :fitness new-fitness)))</pre></td></tr><tr><td class="docs"><p>Mutate each individual of a population.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn mutate-population
   [population cities-list mutation-rate]
-  (map #(swap-cities % mutation-rate) population))</pre></td></tr><tr><td class="docs"><hr />
+  (map #(swap-and-update % mutation-rate) population))</pre></td></tr><tr><td class="docs"><p>Generate a new generation of a given population.
+  A new generation is created based on selected individuals, which are crossed
+  in pairs and then mutated.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn new-generation
+  [population cities-list global-best population-size elitism-size mutation-rate]
+  (let [pop (conj population global-best) ; with this, new generations will
+                                          ; not forget the best individual
+        normalized-population (map #(normalize-fitness %1 pop) pop)
+        selected-population (selection normalized-population population-size elitism-size)
+        crossed-population (crossover-population selected-population population-size)]
+    (mutate-population crossed-population cities-list mutation-rate)))</pre></td></tr><tr><td class="docs"><hr />
 
 <h2>Genetic Algorithm</h2>
 
@@ -3093,23 +3099,15 @@ between two points with <code>sqrt((xa - xb)^2 + (ya - yb)^2)</code>.</p>
 - Select the best individuals
 - Crossover the individuals
 - Mutate them
+- Update values
 - Loop</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>Generate a new generation of a given population.
-  A new generation is created based on selected individuals, which are crossed
-  in pairs and then mutated.</p>
-</td><td class="codes"><pre class="brush: clojure">(defn new-generation
-  [population cities-list global-best population-size mutation-rate]
-  (let [pop (conj population global-best) ; with this, new generations will
-                                        ; not forget the best individual
-        normalized-population (map #(normalize-fitness %1 pop) pop)
-        selected-population (selection normalized-population (* 2 population-size))
-        crossed-population (crossover-population selected-population cities-list)]
-    (mutate-population crossed-population cities-list mutation-rate)))</pre></td></tr><tr><td class="docs"><p>Run the genetic algorithm.</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>Run the genetic algorithm.</p>
 </td><td class="codes"><pre class="brush: clojure">(defn genetic-algorithm
   [initial-population
    cities-list
    generations
    population-size
+   elitism-size
    mutation-rate
    print-progress]
   (loop [generation 1
@@ -3126,8 +3124,8 @@ between two points with <code>sqrt((xa - xb)^2 + (ya - yb)^2)</code>.</p>
           gen-best (last sorted-gen)]
       (if print-progress
         (println (str &quot;Generation: &quot; generation
-                      &quot;, Best distance: &quot; (:total-distance gen-best)
-                      &quot;, Best fitness: &quot; (:fitness gen-best))))
+                      &quot;, Best distance: &quot; (:total-distance global-best)
+                      &quot;, Best fitness: &quot; (:fitness global-best))))
       (if (= generation generations)
         {:population current-generation
          :historical-best-distance historical-best-distance
@@ -3140,6 +3138,7 @@ between two points with <code>sqrt((xa - xb)^2 + (ya - yb)^2)</code>.</p>
                          cities-list
                          global-best
                          population-size
+                         elitism-size
                          mutation-rate)
          (conj historical-best-distance (:total-distance global-best))
          (conj historical-distance (:total-distance gen-best))
@@ -3149,10 +3148,15 @@ between two points with <code>sqrt((xa - xb)^2 + (ya - yb)^2)</code>.</p>
            global-best))))))</pre></td></tr><tr><td class="docs"><hr />
 
 <h2>Variables</h2>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>Number of iterations</p>
-</td><td class="codes"><pre class="brush: clojure">(def generations 10000)</pre></td></tr><tr><td class="docs"><p>Number of individuals in each generation</p>
-</td><td class="codes"><pre class="brush: clojure">(def population-size 500)</pre></td></tr><tr><td class="docs"><p>Rate at which the cities in a route will be swapped</p>
-</td><td class="codes"><pre class="brush: clojure">(def mutation-rate 0.1)</pre></td></tr><tr><td class="docs"><p>All the cities to find the route for.</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>Number of iterations.</p>
+</td><td class="codes"><pre class="brush: clojure">(def generations
+   200)</pre></td></tr><tr><td class="docs"><p>Number of individuals in each generation</p>
+</td><td class="codes"><pre class="brush: clojure">(def population-size
+   500)</pre></td></tr><tr><td class="docs"><p>Number of best individuals to pass each generation</p>
+</td><td class="codes"><pre class="brush: clojure">(def elitism-size
+   100)</pre></td></tr><tr><td class="docs"><p>Rate at which the cities in a route will be swapped</p>
+</td><td class="codes"><pre class="brush: clojure">(def mutation-rate
+   0.02)</pre></td></tr><tr><td class="docs"><p>All the cities to find the route for.</p>
 </td><td class="codes"><pre class="brush: clojure">(def cities
   [(City. &quot;1&quot; -100	0)
    (City. &quot;2&quot; 100	0)
@@ -3205,18 +3209,21 @@ between two points with <code>sqrt((xa - xb)^2 + (ya - yb)^2)</code>.</p>
                                cities
                                generations
                                population-size
+                               elitism-size
                                mutation-rate
                                true)
         best (:global-best ga)]
     (save-historical-data &quot;./ga_output&quot; &quot;historical-best-distance.csv&quot; (:historical-best-distance ga))
     (save-historical-data &quot;./ga_output&quot; &quot;historical-distance.csv&quot; (:historical-distance ga))
     (save-historical-data &quot;./ga_output&quot; &quot;historical-fitness.csv&quot; (:historical-fitness ga))
-    (println &quot;Lowest Distance: &quot; (:total-distance best))
-    (println &quot;Best Route: &quot; (map :name (:route best)))
-    (println &quot;Route size&quot; (count (map :name (:route best))))
-    (println &quot;Best Fitness: &quot; (:fitness best))))</pre></td></tr><tr><td class="docs"><p>Execute code in REPL:</p>
+    (println &quot;\nResults:&quot;)
+    (println &quot;- Shortest Distance: &quot; (:total-distance best))
+    (println &quot;- Best Route: &quot; (map :name (:route best)))
+    (println &quot;- Route size&quot; (count (map :name (:route best))))
+    (println &quot;- Best Fitness: &quot; (:fitness best))))</pre></td></tr><tr><td class="docs"><p>Execute code in REPL:</p>
 
-<p>(-main)</p>
+<pre><code>(-main)
+</code></pre>
 </td><td class="codes"></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_travelling-salesman-problem.core">travelling-salesman-problem.core</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
 SyntaxHighlighter.all();
 

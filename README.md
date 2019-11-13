@@ -56,9 +56,9 @@ The cities are represented in the following chart:
 ## Results
 
 With the following parameters, the algorithm reached the result of `565.685424949238`:
-- Generations: 10000,
+- Generations: 200,
 - Population Size: 500,
-- Mutation Rate: 0.1.
+- Mutation Rate: 0.02.
 
 ### Evolution
 ![evolution_chart](./resources/evolution_chart.png "Best Distance Evolution per Generation")
