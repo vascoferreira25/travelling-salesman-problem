@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
-## 1.1.0 - 2019-11-13
+## 1.2.0 - 2019-11-13
 ### Fixed
 - The algorithm was not updating the fitness and total distance values after mutation.
 - Each individual has a normalized fitness value instead of replacing the fitness value.
@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file. This change
 - Swap-cities: now it iterates over the cities and swap them with a mutation rate probability.
 - Selection: now it uses both random selection and elite selection.
 
-## 1.0.1 - 2019-10-29
+## 1.1.0 - 2019-10-29
 ### Fixed
 - Fixed the documentation.
 
